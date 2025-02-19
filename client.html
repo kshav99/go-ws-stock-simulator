@@ -83,7 +83,7 @@
 
     <!-- JavaScript -->
     <script>
-        const ws = new WebSocket('ws://localhost:8080/ws');
+        const ws = new WebSocket('wss://go-ws-stock-simulator.onrender.com/ws');
         const stocks = new Map();
         let currentSortOption = 'symbol';
         let currentSortDirection = 'asc';
@@ -91,7 +91,7 @@
         // Fetch initial stock data
         async function fetchInitialStocks() {
             try {
-                const response = await fetch('http://localhost:8080/api/stocks');
+    const response = await fetch('https://go-ws-stock-simulator.onrender.com/api/stocks');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
