@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Stock Screener</title>
+
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        /* Animation Styles */
+        .animate-pulse-green { animation: pulse-green 4s infinite; }
+        .animate-pulse-red { animation: pulse-red 4s infinite; }
+        @keyframes pulse-green {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(16, 185, 129, 0.1); }
+        }
+        @keyframes pulse-red {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(239, 68, 68, 0.1); }
+        }
+        .price-up { animation: slide-up 1s ease-out; }
+        .price-down { animation: slide-down 1s ease-out; }
+        @keyframes slide-up {
+            0% { transform: translateY(10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slide-down {
+            0% { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        /* Sorting Indicator Styles */
+        .sorting-indicator {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+        }
+        .sorting-asc {
+            border-bottom: 8px solid #10b981; /* Green */
+        }
+        .sorting-desc {
+            border-top: 8px solid #ef4444; /* Red */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <!-- Container -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="mb-4">
+            <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+                <div class="flex justify-between items-center flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-bold">Live Stock Prices</h2>
+                    </div>
+                    <div class="flex space-x-2 mt-2 md:mt-0">
+                        <input type="text" id="stockFilter" placeholder="Filter stocks..."
+                               class="px-2 py-1 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <select id="sortOption" class="px-2 py-1 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <option value="symbol">Symbol</option>
+                            <option value="price">Price</option>
+                            <option value="change">Change</option>
+                            <option value="volume">Volume</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock List -->
+        <div class="bg-gray-800 rounded-lg shadow-lg mb-6">
+            <div id="stockList" class="max-h-[700px] overflow-y-auto">
+                <!-- Table will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const ws = new WebSocket('ws://localhost:8080/ws');
+        const stocks = new Map();
+        let currentSortOption = 'symbol';
+        let currentSortDirection = 'asc';
+
+        // Fetch initial stock data
+        async function fetchInitialStocks() {
+            try {
+                const response = await fetch('http://localhost:8080/api/stocks');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("Fetched initial stocks:", data);
+                updateStocks(data); // Initialize with data from API
+            } catch (error) {
+                console.error("Could not fetch initial stocks:", error);
+            }
+        }
+
+        ws.onopen = () => {
+            console.log('WebSocket connection opened');
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+
+        ws.onmessage = (event) => {
+            const stockData = JSON.parse(event.data);
+            console.log("Received WebSocket data:", stockData);
+            updateStock(stockData); // Update with individual stock update
+        };
+
+        function updateStock(stock) {
+            if (stock.symbol && typeof stock.symbol === 'string') {
+                stocks.set(stock.symbol, stock);
+                console.log("Updated stock:", stock);
+                renderStockList();
+            } else {
+                console.error("Invalid stock data:", stock);
+            }
+        }
+
+        function updateStocks(stockDataArray) {
+            stockDataArray.forEach(stock => {
+                if (stock.symbol && typeof stock.symbol === 'string') {
+                    stocks.set(stock.symbol, stock);
+                } else {
+                    console.error("Invalid stock data:", stock);
+                }
+            });
+            console.log("Updated stocks:", stocks);
+            renderStockList();
+        }
+
+        function renderStockList() {
+            const stockListDiv = document.getElementById('stockList');
+            stockListDiv.innerHTML = '';
+            const filterText = document.getElementById('stockFilter').value.toLowerCase();
+            let sortedStocks = Array.from(stocks.values());
+
+            sortedStocks = sortedStocks.filter(stock => stock.symbol && stock.symbol.toLowerCase().includes(filterText));
+
+            sortedStocks.sort((a, b) => {
+                const aValue = a[currentSortOption];
+                const bValue = b[currentSortOption];
+                if (currentSortDirection === 'asc') {
+                    return aValue > bValue ? 1 : -1;
+                } else {
+                    return aValue < bValue ? 1 : -1;
+                }
+            });
+
+            renderStockTable(stockListDiv, sortedStocks);
+            updateSortIndicators();
+        }
+
+        function renderStockTable(stockListDiv, stocksToRender) {
+            const stockTable = document.createElement('table');
+            stockTable.className = 'w-full';
+            stockTable.innerHTML = `
+                <thead class="text-left text-gray-300">
+                    <tr>
+                        <th class="p-2 cursor-pointer" data-sort="symbol">Symbol</th>
+                        <th class="p-2 cursor-pointer" data-sort="price">Price</th>
+                        <th class="p-2 cursor-pointer" data-sort="change">Change (%)</th>
+                        <th class="p-2 cursor-pointer" data-sort="volume">Volume</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTableBody" class="text-gray-100">
+                </tbody>
+            `;
+            const stockTableBody = stockTable.querySelector('#stockTableBody');
+            stocksToRender.forEach(stock => {
+                if (stock.symbol) {
+                    const row = stockTableBody.insertRow();
+                    row.className = 'border-b border-gray-700 hover:bg-gray-700 cursor-pointer';
+                    row.innerHTML = `
+                        <td class="p-2 font-bold">${stock.symbol}</td>
+                        <td class="p-2 ${getPriceColorClass(stock.change)} ${getPriceAnimationClass(stock.change)}">${stock.price.toFixed(2)}</td>
+                        <td class="p-2 ${getPriceColorClass(stock.change)} ${getPriceAnimationStyleClass(stock.change)}">${stock.changePercent.toFixed(2)}%</td>
+                        <td class="p-2 text-gray-300">${formatVolume(stock.volume)}</td>
+                    `;
+
+                    // Add click event to row for modal (if implementing modal)
+                    // row.addEventListener('click', () => {
+                    //     showStockDetails(stock);
+                    // });
+                } else {
+                    console.error("Invalid stock data:", stock);
+                }
+            });
+            console.log("Rendered stock table:", stockTable);
+            stockListDiv.appendChild(stockTable);
+
+            // Add event listeners for sorting
+            const headers = stockTable.querySelectorAll('th[data-sort]');
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const sortKey = header.getAttribute('data-sort');
+                    if (currentSortOption === sortKey) {
+                        // Toggle sort direction
+                        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSortOption = sortKey;
+                        currentSortDirection = 'asc';
+                    }
+                    renderStockList();
+                });
+            });
+        }
+
+        function getPriceColorClass(change) {
+            return change >= 0 ? 'text-green-500' : 'text-red-500';
+        }
+
+        function getPriceAnimationClass(change) {
+            return change >= 0 ? 'animate-pulse-green' : 'animate-pulse-red';
+        }
+
+        function getPriceAnimationStyleClass(change) {
+            return change >= 0 ? 'price-up' : 'price-down';
+        }
+
+        function formatVolume(volume) {
+            if (volume >= 1000000) {
+                return (volume / 1000000).toFixed(1) + 'M';
+            } else if (volume >= 1000) {
+                return (volume / 1000).toFixed(1) + 'K';
+            }
+            return volume;
+        }
+
+        function updateSortIndicators() {
+            const headers = document.querySelectorAll('th[data-sort]');
+            headers.forEach(header => {
+                // Remove existing indicators
+                const existingIndicator = header.querySelector('.sorting-indicator');
+                if (existingIndicator) {
+                    header.removeChild(existingIndicator);
+                }
+
+                // Add indicator to current sort column
+                if (header.getAttribute('data-sort') === currentSortOption) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sorting-indicator ' + (currentSortDirection === 'asc' ? 'sorting-asc' : 'sorting-desc');
+                    header.appendChild(indicator);
+                }
+            });
+        }
+
+        // Event Listeners
+        document.getElementById('stockFilter').addEventListener('input', renderStockList);
+        document.getElementById('sortOption').addEventListener('change', function() {
+            currentSortOption = this.value;
+            currentSortDirection = 'asc'; // Reset to ascending when sort option changes
+            renderStockList();
+        });
+
+        // Initial Fetch
+        fetchInitialStocks();
+    </script>
+</body>
+</html>
