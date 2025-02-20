@@ -13,7 +13,7 @@
     body {
       background-color: #121212;
       color: #e0e0e0;
-      padding-top: 70px; /* leave space for fixed navbar */
+      padding-top: 70px; /* space for fixed navbar */
     }
     /* Fixed navbar with deep blue metallic gradient */
     .navbar {
@@ -71,9 +71,7 @@
       <!-- Left Panel: Alert Form and Active Alerts -->
       <div class="col-12 col-lg-4 mb-4">
         <div class="card mb-3 shadow">
-          <div class="card-header">
-            Set Price Alert
-          </div>
+          <div class="card-header">Set Price Alert</div>
           <div class="card-body">
             <div class="mb-3">
               <label for="symbol" class="form-label">Stock Symbol</label>
@@ -106,11 +104,9 @@
           </div>
         </div>
         <div class="card shadow">
-          <div class="card-header">
-            Active Alerts
-          </div>
+          <div class="card-header">Active Alerts</div>
           <ul class="list-group list-group-flush" id="alertList">
-            <!-- Active alerts will be injected here -->
+            <!-- Active alerts injected here -->
           </ul>
         </div>
       </div>
@@ -118,9 +114,7 @@
       <!-- Right Panel: Stock Table and Trend Chart -->
       <div class="col-12 col-lg-8">
         <div class="card shadow mb-4">
-          <div class="card-header">
-            Real-Time Stock Updates
-          </div>
+          <div class="card-header">Real-Time Stock Updates</div>
           <div class="card-body">
             <div class="table-responsive">
               <table id="stockTable" class="table table-dark table-striped w-100">
@@ -134,9 +128,7 @@
                     <th>Updated At</th>
                   </tr>
                 </thead>
-                <tbody id="stockBody">
-                  <!-- Data will be populated dynamically -->
-                </tbody>
+                <tbody id="stockBody"><!-- Data injected dynamically --></tbody>
               </table>
             </div>
           </div>
@@ -152,6 +144,7 @@
                 <option value="5">Last 5 Minutes</option>
                 <option value="15">Last 15 Minutes</option>
               </select>
+              <!-- On mobile, we'll force the line chart for smoother updates -->
               <select id="chartType" class="form-select form-select-sm d-inline-block w-auto">
                 <option value="line">Line</option>
                 <option value="candlestick">Candlestick</option>
@@ -169,25 +162,24 @@
   <!-- Toast Container for Loud Alerts -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Scripts: jQuery, DataTables, Bootstrap Bundle, Chart.js, and Financial Plugin -->
+  <!-- Scripts: jQuery, DataTables, Bootstrap Bundle, Chart.js, Financial Plugin -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Financial chart plugin for candlestick charts -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
 
   <script>
     // Global variables for stocks, alerts, and chart.
-    let latestStocks = {}; // Latest stock data keyed by symbol.
-    let stockHistory = {}; // Price history: { symbol: [ {time, price}, ... ] }
+    let latestStocks = {}; // Stock data keyed by symbol.
+    let stockHistory = {}; // Price history: { symbol: [{time, price}, ...] }
     let selectedSymbol = null;
     let trendChart = null;
     let dataTable = null;
     const currentAlerts = [];
     
-    // Connect to the backend WebSocket using your deployed URL.
+    // Connect to the deployed WebSocket.
     const ws = new WebSocket("wss://go-ws-stock-simulator.onrender.com/ws");
     ws.onopen = () => console.log("WebSocket connected.");
     ws.onmessage = (event) => {
@@ -203,7 +195,6 @@
     ws.onerror = (error) => console.error("WebSocket error:", error);
     ws.onclose = () => console.log("WebSocket closed.");
 
-    // Process a stock update.
     function processStockUpdate(stock) {
       latestStocks[stock.symbol] = stock;
       if (!stockHistory[stock.symbol]) {
@@ -215,7 +206,7 @@
       }
     }
 
-    // Refresh the DataTable every second without disturbing the scroll.
+    // Refresh the DataTable every second without disturbing scroll.
     function refreshTable() {
       const tableData = [];
       for (const symbol in latestStocks) {
@@ -275,17 +266,15 @@
     }
     setInterval(refreshTable, 1000);
 
-    // When a stock row is clicked, select it and update the trend chart.
     function selectStock(symbol) {
       selectedSymbol = symbol;
       document.getElementById("chartSymbol").textContent = symbol;
       updateChart();
     }
 
-    // Update (or create) the chart based on the selected type and time frame.
+    // Update chart: force line chart on mobile for stability.
     function updateChart() {
       if (!selectedSymbol || !stockHistory[selectedSymbol]) return;
-      
       const tf = document.getElementById("timeFrame").value;
       let filteredHistory = stockHistory[selectedSymbol];
       if (tf !== "all") {
@@ -293,26 +282,23 @@
         const cutoff = Date.now() - minutes * 60 * 1000;
         filteredHistory = filteredHistory.filter(entry => entry.time.getTime() >= cutoff);
       }
-      
-      const selectedChartType = document.getElementById("chartType").value;
+      // Force line chart on mobile for smoother updates.
+      const chartType = window.innerWidth < 576 ? "line" : document.getElementById("chartType").value;
       const ctx = document.getElementById("trendChart").getContext("2d");
-      
-      // If the chart exists and type hasn't changed, update data in place.
-      if (trendChart && trendChart.config.type === selectedChartType) {
-        if (selectedChartType === "line") {
+
+      // If the chart exists and the type is unchanged, update data in place.
+      if (trendChart && trendChart.config.type === chartType) {
+        if (chartType === "line") {
           const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
           const data = filteredHistory.map(entry => entry.price);
           trendChart.data.labels = labels;
           trendChart.data.datasets[0].data = data;
-          let lineColor = 'rgba(75, 192, 192, 1)';
-          if (data.length > 1) {
-            lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-          }
+          let lineColor = (data.length > 1 && (data[data.length - 1] - data[0]) >= 0) ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
           const bgColor = lineColor.replace(/1\)$/, '0.2)');
           trendChart.data.datasets[0].borderColor = lineColor;
           trendChart.data.datasets[0].backgroundColor = bgColor;
           trendChart.update();
-        } else if (selectedChartType === "candlestick") {
+        } else if (chartType === "candlestick") {
           if (filteredHistory.length < 3) return;
           const groupSize = 3;
           let candleData = [];
@@ -323,13 +309,7 @@
             const close = group[group.length - 1].price;
             const high = Math.max(...group.map(p => p.price));
             const low = Math.min(...group.map(p => p.price));
-            candleData.push({
-              x: group[0].time,
-              o: open,
-              h: high,
-              l: low,
-              c: close
-            });
+            candleData.push({ x: group[0].time, o: open, h: high, l: low, c: close });
           }
           trendChart.data.datasets[0].data = candleData;
           trendChart.update();
@@ -343,13 +323,10 @@
         trendChart = null;
       }
       
-      if (selectedChartType === "line") {
+      if (chartType === "line") {
         const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
         const data = filteredHistory.map(entry => entry.price);
-        let lineColor = 'rgba(75, 192, 192, 1)';
-        if (data.length > 1) {
-          lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-        }
+        let lineColor = (data.length > 1 && (data[data.length - 1] - data[0]) >= 0) ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
         const bgColor = lineColor.replace(/1\)$/, '0.2)');
         trendChart = new Chart(ctx, {
           type: 'line',
@@ -373,7 +350,7 @@
             }
           }
         });
-      } else if (selectedChartType === "candlestick") {
+      } else if (chartType === "candlestick") {
         if (filteredHistory.length < 3) return;
         const groupSize = 3;
         let candleData = [];
@@ -384,22 +361,11 @@
           const close = group[group.length - 1].price;
           const high = Math.max(...group.map(p => p.price));
           const low = Math.min(...group.map(p => p.price));
-          candleData.push({
-            x: group[0].time,
-            o: open,
-            h: high,
-            l: low,
-            c: close
-          });
+          candleData.push({ x: group[0].time, o: open, h: high, l: low, c: close });
         }
         trendChart = new Chart(ctx, {
           type: 'candlestick',
-          data: {
-            datasets: [{
-              label: selectedSymbol,
-              data: candleData
-            }]
-          },
+          data: { datasets: [{ label: selectedSymbol, data: candleData }] },
           options: {
             responsive: true,
             maintainAspectRatio: false,
