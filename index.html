@@ -1,176 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Stock Screener Pro </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-    <!-- Custom CSS for Dark Theme and Responsiveness -->
-    <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-        .navbar {
-            background-color: #1f1f1f;
-        }
-        .card, .card-header, .dataTables_wrapper, .dataTables_wrapper .dataTables_paginate a {
-            background-color: #1f1f1f;
-            color: #e0e0e0;
-            border: none;
-        }
-        .card-header {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        /* DataTable header styling */
-        table.dataTable thead th {
-            background-color: #2b2b2b;
-            color: #e0e0e0;
-        }
-        /* Toast container styling */
-        .toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1080;
-        }
-        /* Fixed chart container with responsive height */
-        #chartContainer {
-            margin-top: 20px;
-            height: 300px;
-        }
-        @media (max-width: 576px) {
-            #chartContainer {
-                height: 200px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Dark Stock Screener Pro - Mobile Friendly</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+  <!-- Custom CSS for Dark Theme and Responsiveness -->
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    .navbar {
+      background-color: #1f1f1f;
+    }
+    .card, .card-header, .dataTables_wrapper, .dataTables_wrapper .dataTables_paginate a {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      border: none;
+    }
+    .card-header {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* DataTable header styling */
+    table.dataTable thead th {
+      background-color: #2b2b2b;
+      color: #e0e0e0;
+    }
+    /* Toast container styling */
+    .toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1080;
+    }
+    /* Fixed chart container with responsive height */
+    #chartContainer {
+      margin-top: 20px;
+      height: 300px;
+    }
+    @media (max-width: 576px) {
+      #chartContainer {
+        height: 200px;
+      }
+    }
+  </style>
 </head>
 <body>
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="#">Dark Stock Screener Pro</a>
+      <a class="navbar-brand" href="#">Dark Stock Screener Pro</a>
     </div>
-</nav>
+  </nav>
 
-<div class="container mt-5 pt-4">
+  <div class="container mt-5 pt-4">
     <div class="row">
-        <!-- Left Panel: Alert Form and Active Alerts -->
-        <div class="col-12 col-lg-4 mb-4">
-            <div class="card mb-3 shadow">
-                <div class="card-header">
-                    Set Price Alert
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="symbol" class="form-label">Stock Symbol</label>
-                        <input type="text" id="symbol" class="form-control" placeholder="e.g., AAPL" list="stockSymbols">
-                        <datalist id="stockSymbols">
-                            <option value="AAPL">
-                            <option value="GOOGL">
-                            <option value="MSFT">
-                            <option value="AMZN">
-                            <option value="TSLA">
-                            <option value="META">
-                            <option value="NVDA">
-                            <option value="AMD">
-                            <option value="INTC">
-                            <option value="NFLX">
-                        </datalist>
-                    </div>
-                    <div class="mb-3">
-                        <label for="condition" class="form-label">Condition</label>
-                        <select id="condition" class="form-select">
-                            <option value="above">Above</option>
-                            <option value="below">Below</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="price" class="form-label">Target Price</label>
-                        <input type="number" id="price" class="form-control" placeholder="Enter price" step="0.01">
-                    </div>
-                    <button id="setAlert" class="btn btn-primary w-100">Set Alert</button>
-                </div>
+      <!-- Left Panel: Alert Form and Active Alerts -->
+      <div class="col-12 col-lg-4 mb-4">
+        <div class="card mb-3 shadow">
+          <div class="card-header">
+            Set Price Alert
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="symbol" class="form-label">Stock Symbol</label>
+              <input type="text" id="symbol" class="form-control" placeholder="e.g., AAPL" list="stockSymbols">
+              <datalist id="stockSymbols">
+                <option value="AAPL">
+                <option value="GOOGL">
+                <option value="MSFT">
+                <option value="AMZN">
+                <option value="TSLA">
+                <option value="META">
+                <option value="NVDA">
+                <option value="AMD">
+                <option value="INTC">
+                <option value="NFLX">
+              </datalist>
             </div>
-            <div class="card shadow">
-                <div class="card-header">
-                    Active Alerts
-                </div>
-                <ul class="list-group list-group-flush" id="alertList">
-                    <!-- Active alerts will be injected here -->
-                </ul>
+            <div class="mb-3">
+              <label for="condition" class="form-label">Condition</label>
+              <select id="condition" class="form-select">
+                <option value="above">Above</option>
+                <option value="below">Below</option>
+              </select>
             </div>
+            <div class="mb-3">
+              <label for="price" class="form-label">Target Price</label>
+              <input type="number" id="price" class="form-control" placeholder="Enter price" step="0.01">
+            </div>
+            <button id="setAlert" class="btn btn-primary w-100">Set Alert</button>
+          </div>
         </div>
+        <div class="card shadow">
+          <div class="card-header">
+            Active Alerts
+          </div>
+          <ul class="list-group list-group-flush" id="alertList">
+            <!-- Active alerts will be injected here -->
+          </ul>
+        </div>
+      </div>
 
-        <!-- Right Panel: Stock Table and Trend Chart -->
-        <div class="col-12 col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header">
-                    Real-Time Stock Updates
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="stockTable" class="table table-dark table-striped w-100">
-                            <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Price</th>
-                                <th>Change</th>
-                                <th>% Change</th>
-                                <th>Volume</th>
-                                <th>Updated At</th>
-                            </tr>
-                            </thead>
-                            <tbody id="stockBody">
-                            <!-- Data will be populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+      <!-- Right Panel: Stock Table and Trend Chart -->
+      <div class="col-12 col-lg-8">
+        <div class="card shadow mb-4">
+          <div class="card-header">
+            Real-Time Stock Updates
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="stockTable" class="table table-dark table-striped w-100">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Change</th>
+                    <th>% Change</th>
+                    <th>Volume</th>
+                    <th>Updated At</th>
+                  </tr>
+                </thead>
+                <tbody id="stockBody">
+                  <!-- Data will be populated dynamically -->
+                </tbody>
+              </table>
             </div>
-            <!-- Fixed Trend Chart below table with selectors -->
-            <div class="card shadow" id="chartContainer">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span>Real-Time Price Trend: <span id="chartSymbol">None</span></span>
-                    <div>
-                        <select id="timeFrame" class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option value="all">All</option>
-                            <option value="1">Last 1 Minute</option>
-                            <option value="5">Last 5 Minutes</option>
-                            <option value="15">Last 15 Minutes</option>
-                        </select>
-                        <select id="chartType" class="form-select form-select-sm d-inline-block w-auto">
-                            <option value="line">Line</option>
-                            <option value="candlestick">Candlestick</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body p-0" style="position: relative; height: 100%;">
-                    <canvas id="trendChart" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></canvas>
-                </div>
-            </div>
+          </div>
         </div>
+        <!-- Fixed Trend Chart below table with selectors -->
+        <div class="card shadow" id="chartContainer">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <span>Real-Time Price Trend: <span id="chartSymbol">None</span></span>
+            <div>
+              <select id="timeFrame" class="form-select form-select-sm d-inline-block w-auto me-2">
+                <option value="all">All</option>
+                <option value="1">Last 1 Minute</option>
+                <option value="5">Last 5 Minutes</option>
+                <option value="15">Last 15 Minutes</option>
+              </select>
+              <select id="chartType" class="form-select form-select-sm d-inline-block w-auto">
+                <option value="line">Line</option>
+                <option value="candlestick">Candlestick</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body p-0" style="position: relative; height: 100%;">
+            <canvas id="trendChart" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Toast Container for Loud Alerts -->
-<div class="toast-container" id="toastContainer"></div>
+  <!-- Toast Container for Loud Alerts -->
+  <div class="toast-container" id="toastContainer"></div>
 
-<!-- Scripts: jQuery, DataTables, Bootstrap Bundle, Chart.js, and Financial Plugin -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Financial chart plugin for candlestick charts -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
+  <!-- Scripts: jQuery, DataTables, Bootstrap Bundle, Chart.js, and Financial Plugin -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Financial chart plugin for candlestick charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
 
-<script>
+  <script>
     // Global variables for stocks, alerts, and chart.
     let latestStocks = {}; // Latest stock data keyed by symbol.
     let stockHistory = {}; // Price history: { symbol: [ {time, price}, ... ] }
@@ -178,294 +178,293 @@
     let trendChart = null;
     let dataTable = null;
     const currentAlerts = [];
-
-    // Connect to the backend WebSocket.
-    const ws = new WebSocket("ws://localhost:8080/ws");
+    
+    // Connect to the backend WebSocket using your deployed URL.
+    const ws = new WebSocket("wss://go-ws-stock-simulator.onrender.com/ws");
     ws.onopen = () => console.log("WebSocket connected.");
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (Array.isArray(data)) {
-            data.forEach(stock => processStockUpdate(stock));
-        } else if (data.type === "ALERT") {
-            showToast(data.message);
-        } else {
-            processStockUpdate(data);
-        }
+      const data = JSON.parse(event.data);
+      if (Array.isArray(data)) {
+        data.forEach(stock => processStockUpdate(stock));
+      } else if (data.type === "ALERT") {
+        showToast(data.message);
+      } else {
+        processStockUpdate(data);
+      }
     };
     ws.onerror = (error) => console.error("WebSocket error:", error);
     ws.onclose = () => console.log("WebSocket closed.");
 
     // Process a stock update.
     function processStockUpdate(stock) {
-        latestStocks[stock.symbol] = stock;
-        if (!stockHistory[stock.symbol]) {
-            stockHistory[stock.symbol] = [];
-        }
-        stockHistory[stock.symbol].push({ time: new Date(stock.updatedAt), price: stock.price });
-        if (stockHistory[stock.symbol].length > 100) {
-            stockHistory[stock.symbol].shift();
-        }
+      latestStocks[stock.symbol] = stock;
+      if (!stockHistory[stock.symbol]) {
+        stockHistory[stock.symbol] = [];
+      }
+      stockHistory[stock.symbol].push({ time: new Date(stock.updatedAt), price: stock.price });
+      if (stockHistory[stock.symbol].length > 100) {
+        stockHistory[stock.symbol].shift();
+      }
     }
 
     // Refresh the DataTable every second without disturbing the scroll.
     function refreshTable() {
-        const tableData = [];
-        for (const symbol in latestStocks) {
-            const stock = latestStocks[symbol];
-            tableData.push([
-                stock.symbol,
-                stock.price.toFixed(2),
-                stock.change.toFixed(2),
-                stock.changePercent.toFixed(2) + '%',
-                stock.volume,
-                new Date(stock.updatedAt).toLocaleTimeString()
-            ]);
-        }
-        if (!dataTable) {
-            dataTable = $('#stockTable').DataTable({
-                data: tableData,
-                columns: [
-                    { title: "Symbol" },
-                    { title: "Price" },
-                    { title: "Change" },
-                    { title: "% Change" },
-                    { title: "Volume" },
-                    { title: "Updated At" }
-                ],
-                rowCallback: function(row, data) {
-                    const change = parseFloat(data[2]);
-                    // Compute intensity for background (scale change relative to a max of 5).
-                    let intensity = Math.min(1, Math.abs(change) / 5);
-                    let alpha = 0.3 + intensity * 0.7;
-                    if (change > 0) {
-                        $(row).css("background-color", `rgba(76, 175, 80, ${alpha})`);
-                        $(row).find("td:eq(0)").css("color", "lightgreen");
-                    } else if (change < 0) {
-                        $(row).css("background-color", `rgba(244, 67, 54, ${alpha})`);
-                        $(row).find("td:eq(0)").css("color", "tomato");
-                    } else {
-                        $(row).css("background-color", "");
-                        $(row).find("td:eq(0)").css("color", "#e0e0e0");
-                    }
-                },
-                paging: false,
-                info: false,
-                searching: false,
-                ordering: true,
-                order: [[0, "asc"]]
-            });
-            $('#stockTable tbody').on('click', 'tr', function () {
-                const rowData = dataTable.row(this).data();
-                if (rowData) {
-                    selectStock(rowData[0]);
-                }
-            });
-        } else {
-            dataTable.clear();
-            dataTable.rows.add(tableData);
-            dataTable.draw(false);
-        }
+      const tableData = [];
+      for (const symbol in latestStocks) {
+        const stock = latestStocks[symbol];
+        tableData.push([
+          stock.symbol,
+          stock.price.toFixed(2),
+          stock.change.toFixed(2),
+          stock.changePercent.toFixed(2) + '%',
+          stock.volume,
+          new Date(stock.updatedAt).toLocaleTimeString()
+        ]);
+      }
+      if (!dataTable) {
+        dataTable = $('#stockTable').DataTable({
+          data: tableData,
+          columns: [
+            { title: "Symbol" },
+            { title: "Price" },
+            { title: "Change" },
+            { title: "% Change" },
+            { title: "Volume" },
+            { title: "Updated At" }
+          ],
+          rowCallback: function(row, data) {
+            const change = parseFloat(data[2]);
+            let intensity = Math.min(1, Math.abs(change) / 5);
+            let alpha = 0.3 + intensity * 0.7;
+            if (change > 0) {
+              $(row).css("background-color", `rgba(76, 175, 80, ${alpha})`);
+              $(row).find("td:eq(0)").css("color", "lightgreen");
+            } else if (change < 0) {
+              $(row).css("background-color", `rgba(244, 67, 54, ${alpha})`);
+              $(row).find("td:eq(0)").css("color", "tomato");
+            } else {
+              $(row).css("background-color", "");
+              $(row).find("td:eq(0)").css("color", "#e0e0e0");
+            }
+          },
+          paging: false,
+          info: false,
+          searching: false,
+          ordering: true,
+          order: [[0, "asc"]]
+        });
+        $('#stockTable tbody').on('click', 'tr', function () {
+          const rowData = dataTable.row(this).data();
+          if (rowData) {
+            selectStock(rowData[0]);
+          }
+        });
+      } else {
+        dataTable.clear();
+        dataTable.rows.add(tableData);
+        dataTable.draw(false);
+      }
     }
     setInterval(refreshTable, 1000);
 
     // When a stock row is clicked, select it and update the trend chart.
     function selectStock(symbol) {
-        selectedSymbol = symbol;
-        document.getElementById("chartSymbol").textContent = symbol;
-        updateChart();
+      selectedSymbol = symbol;
+      document.getElementById("chartSymbol").textContent = symbol;
+      updateChart();
     }
 
     // Update (or create) the chart based on the selected type and time frame.
     function updateChart() {
-        if (!selectedSymbol || !stockHistory[selectedSymbol]) return;
-
-        const tf = document.getElementById("timeFrame").value;
-        let filteredHistory = stockHistory[selectedSymbol];
-        if (tf !== "all") {
-            const minutes = parseInt(tf);
-            const cutoff = Date.now() - minutes * 60 * 1000;
-            filteredHistory = filteredHistory.filter(entry => entry.time.getTime() >= cutoff);
-        }
-
-        const selectedChartType = document.getElementById("chartType").value;
-        const ctx = document.getElementById("trendChart").getContext("2d");
-
-        // If the chart exists and type hasn't changed, update data in place.
-        if (trendChart && trendChart.config.type === selectedChartType) {
-            if (selectedChartType === "line") {
-                const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
-                const data = filteredHistory.map(entry => entry.price);
-                trendChart.data.labels = labels;
-                trendChart.data.datasets[0].data = data;
-                let lineColor = 'rgba(75, 192, 192, 1)';
-                if (data.length > 1) {
-                    lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-                }
-                const bgColor = lineColor.replace(/1\)$/, '0.2)');
-                trendChart.data.datasets[0].borderColor = lineColor;
-                trendChart.data.datasets[0].backgroundColor = bgColor;
-                trendChart.update();
-            } else if (selectedChartType === "candlestick") {
-                if (filteredHistory.length < 3) return;
-                const groupSize = 3;
-                let candleData = [];
-                for (let i = 0; i < filteredHistory.length; i += groupSize) {
-                    const group = filteredHistory.slice(i, i + groupSize);
-                    if (group.length < 2) continue;
-                    const open = group[0].price;
-                    const close = group[group.length - 1].price;
-                    const high = Math.max(...group.map(p => p.price));
-                    const low = Math.min(...group.map(p => p.price));
-                    candleData.push({
-                        x: group[0].time,
-                        o: open,
-                        h: high,
-                        l: low,
-                        c: close
-                    });
-                }
-                trendChart.data.datasets[0].data = candleData;
-                trendChart.update();
-            }
-            return;
-        }
-
-        // Otherwise, create a new chart.
-        if (trendChart) {
-            trendChart.destroy();
-            trendChart = null;
-        }
-
+      if (!selectedSymbol || !stockHistory[selectedSymbol]) return;
+      
+      const tf = document.getElementById("timeFrame").value;
+      let filteredHistory = stockHistory[selectedSymbol];
+      if (tf !== "all") {
+        const minutes = parseInt(tf);
+        const cutoff = Date.now() - minutes * 60 * 1000;
+        filteredHistory = filteredHistory.filter(entry => entry.time.getTime() >= cutoff);
+      }
+      
+      const selectedChartType = document.getElementById("chartType").value;
+      const ctx = document.getElementById("trendChart").getContext("2d");
+      
+      // If the chart exists and type hasn't changed, update data in place.
+      if (trendChart && trendChart.config.type === selectedChartType) {
         if (selectedChartType === "line") {
-            const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
-            const data = filteredHistory.map(entry => entry.price);
-            let lineColor = 'rgba(75, 192, 192, 1)';
-            if (data.length > 1) {
-                lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-            }
-            const bgColor = lineColor.replace(/1\)$/, '0.2)');
-            trendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: selectedSymbol,
-                        data: data,
-                        borderColor: lineColor,
-                        backgroundColor: bgColor,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { title: { display: true, text: 'Time' } },
-                        y: { title: { display: true, text: 'Price' } }
-                    }
-                }
-            });
+          const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
+          const data = filteredHistory.map(entry => entry.price);
+          trendChart.data.labels = labels;
+          trendChart.data.datasets[0].data = data;
+          let lineColor = 'rgba(75, 192, 192, 1)';
+          if (data.length > 1) {
+            lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
+          }
+          const bgColor = lineColor.replace(/1\)$/, '0.2)');
+          trendChart.data.datasets[0].borderColor = lineColor;
+          trendChart.data.datasets[0].backgroundColor = bgColor;
+          trendChart.update();
         } else if (selectedChartType === "candlestick") {
-            if (filteredHistory.length < 3) return;
-            const groupSize = 3;
-            let candleData = [];
-            for (let i = 0; i < filteredHistory.length; i += groupSize) {
-                const group = filteredHistory.slice(i, i + groupSize);
-                if (group.length < 2) continue;
-                const open = group[0].price;
-                const close = group[group.length - 1].price;
-                const high = Math.max(...group.map(p => p.price));
-                const low = Math.min(...group.map(p => p.price));
-                candleData.push({
-                    x: group[0].time,
-                    o: open,
-                    h: high,
-                    l: low,
-                    c: close
-                });
-            }
-            trendChart = new Chart(ctx, {
-                type: 'candlestick',
-                data: {
-                    datasets: [{
-                        label: selectedSymbol,
-                        data: candleData
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { title: { display: true, text: 'Time' } },
-                        y: { title: { display: true, text: 'Price' } }
-                    }
-                }
+          if (filteredHistory.length < 3) return;
+          const groupSize = 3;
+          let candleData = [];
+          for (let i = 0; i < filteredHistory.length; i += groupSize) {
+            const group = filteredHistory.slice(i, i + groupSize);
+            if (group.length < 2) continue;
+            const open = group[0].price;
+            const close = group[group.length - 1].price;
+            const high = Math.max(...group.map(p => p.price));
+            const low = Math.min(...group.map(p => p.price));
+            candleData.push({
+              x: group[0].time,
+              o: open,
+              h: high,
+              l: low,
+              c: close
             });
+          }
+          trendChart.data.datasets[0].data = candleData;
+          trendChart.update();
         }
+        return;
+      }
+      
+      // Otherwise, create a new chart.
+      if (trendChart) {
+        trendChart.destroy();
+        trendChart = null;
+      }
+      
+      if (selectedChartType === "line") {
+        const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
+        const data = filteredHistory.map(entry => entry.price);
+        let lineColor = 'rgba(75, 192, 192, 1)';
+        if (data.length > 1) {
+          lineColor = (data[data.length - 1] - data[0]) >= 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
+        }
+        const bgColor = lineColor.replace(/1\)$/, '0.2)');
+        trendChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: selectedSymbol,
+              data: data,
+              borderColor: lineColor,
+              backgroundColor: bgColor,
+              fill: true,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: 'Time' } },
+              y: { title: { display: true, text: 'Price' } }
+            }
+          }
+        });
+      } else if (selectedChartType === "candlestick") {
+        if (filteredHistory.length < 3) return;
+        const groupSize = 3;
+        let candleData = [];
+        for (let i = 0; i < filteredHistory.length; i += groupSize) {
+          const group = filteredHistory.slice(i, i + groupSize);
+          if (group.length < 2) continue;
+          const open = group[0].price;
+          const close = group[group.length - 1].price;
+          const high = Math.max(...group.map(p => p.price));
+          const low = Math.min(...group.map(p => p.price));
+          candleData.push({
+            x: group[0].time,
+            o: open,
+            h: high,
+            l: low,
+            c: close
+          });
+        }
+        trendChart = new Chart(ctx, {
+          type: 'candlestick',
+          data: {
+            datasets: [{
+              label: selectedSymbol,
+              data: candleData
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: 'Time' } },
+              y: { title: { display: true, text: 'Price' } }
+            }
+          }
+        });
+      }
     }
     // Update chart every 5 seconds.
     setInterval(updateChart, 5000);
 
     // Set alert: send alert to backend and update active alerts list.
     document.getElementById("setAlert").addEventListener("click", () => {
-        const symbol = document.getElementById("symbol").value.trim().toUpperCase();
-        const condition = document.getElementById("condition").value;
-        const price = parseFloat(document.getElementById("price").value);
-        if (!symbol || isNaN(price)) {
-            showToast("Please enter a valid symbol and price.");
-            return;
-        }
-        const alertData = { Type: "SET_ALERT", Payload: { symbol, condition, price } };
-        ws.send(JSON.stringify(alertData));
-        const alertObj = { symbol, condition, price };
-        currentAlerts.push(alertObj);
-        addAlertToList(alertObj);
-        document.getElementById("symbol").value = "";
-        document.getElementById("price").value = "";
+      const symbol = document.getElementById("symbol").value.trim().toUpperCase();
+      const condition = document.getElementById("condition").value;
+      const price = parseFloat(document.getElementById("price").value);
+      if (!symbol || isNaN(price)) {
+        showToast("Please enter a valid symbol and price.");
+        return;
+      }
+      const alertData = { Type: "SET_ALERT", Payload: { symbol, condition, price } };
+      ws.send(JSON.stringify(alertData));
+      const alertObj = { symbol, condition, price };
+      currentAlerts.push(alertObj);
+      addAlertToList(alertObj);
+      document.getElementById("symbol").value = "";
+      document.getElementById("price").value = "";
     });
 
     function addAlertToList(alertObj) {
-        const li = document.createElement("li");
-        li.className = "list-group-item d-flex justify-content-between align-items-center";
-        li.textContent = `${alertObj.symbol} when price is ${alertObj.condition} ${alertObj.price.toFixed(2)}`;
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "btn btn-danger btn-sm";
-        removeBtn.textContent = "Remove";
-        removeBtn.onclick = () => { removeAlert(alertObj, li); };
-        li.appendChild(removeBtn);
-        document.getElementById("alertList").appendChild(li);
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.textContent = `${alertObj.symbol} when price is ${alertObj.condition} ${alertObj.price.toFixed(2)}`;
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-danger btn-sm";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = () => { removeAlert(alertObj, li); };
+      li.appendChild(removeBtn);
+      document.getElementById("alertList").appendChild(li);
     }
 
     function removeAlert(alertObj, listItem) {
-        const removeMsg = { Type: "REMOVE_ALERT", Payload: alertObj };
-        ws.send(JSON.stringify(removeMsg));
-        listItem.remove();
-        const index = currentAlerts.findIndex(a =>
-            a.symbol === alertObj.symbol && a.condition === alertObj.condition && a.price === alertObj.price);
-        if (index !== -1) {
-            currentAlerts.splice(index, 1);
-        }
+      const removeMsg = { Type: "REMOVE_ALERT", Payload: alertObj };
+      ws.send(JSON.stringify(removeMsg));
+      listItem.remove();
+      const index = currentAlerts.findIndex(a =>
+        a.symbol === alertObj.symbol && a.condition === alertObj.condition && a.price === alertObj.price);
+      if (index !== -1) {
+        currentAlerts.splice(index, 1);
+      }
     }
 
     // Display a loud, prominent toast notification.
     function showToast(message) {
-        const toastEl = document.createElement("div");
-        toastEl.className = "toast align-items-center text-bg-danger border-0";
-        toastEl.setAttribute("role", "alert");
-        toastEl.setAttribute("aria-live", "assertive");
-        toastEl.setAttribute("aria-atomic", "true");
-        toastEl.innerHTML = `
+      const toastEl = document.createElement("div");
+      toastEl.className = "toast align-items-center text-bg-danger border-0";
+      toastEl.setAttribute("role", "alert");
+      toastEl.setAttribute("aria-live", "assertive");
+      toastEl.setAttribute("aria-atomic", "true");
+      toastEl.innerHTML = `
         <div class="d-flex">
           <div class="toast-body fs-5 fw-bold">${message}</div>
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
       `;
-        document.getElementById("toastContainer").appendChild(toastEl);
-        const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
-        bsToast.show();
-        toastEl.addEventListener('hidden.bs.toast', () => { toastEl.remove(); });
+      document.getElementById("toastContainer").appendChild(toastEl);
+      const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
+      bsToast.show();
+      toastEl.addEventListener('hidden.bs.toast', () => { toastEl.remove(); });
     }
-</script>
+  </script>
 </body>
 </html>
