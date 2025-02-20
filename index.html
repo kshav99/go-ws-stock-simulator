@@ -1,444 +1,760 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Stock Screener Pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-  <!-- Custom CSS for Dark Theme, Mobile Responsiveness, and Navbar -->
-  <style>
-    body {
-      background-color: #121212;
-      color: #e0e0e0;
-      padding-top: 70px; /* space for fixed navbar */
-    }
-    /* Fixed navbar with deep blue metallic gradient */
-    .navbar {
-      background: linear-gradient(45deg, #0F52BA, #1A237E);
-      z-index: 1100;
-    }
-    .navbar-brand {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #ffffff !important;
-    }
-    .card, .card-header, .dataTables_wrapper, .dataTables_wrapper .dataTables_paginate a {
-      background-color: #1f1f1f;
-      color: #e0e0e0;
-      border: none;
-    }
-    .card-header {
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-    /* DataTable header styling */
-    table.dataTable thead th {
-      background-color: #2b2b2b;
-      color: #e0e0e0;
-    }
-    /* Toast container styling */
-    .toast-container {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 1080;
-    }
-    /* Fixed chart container with responsive height */
-    #chartContainer {
-      margin-top: 20px;
-      height: 300px;
-    }
-    @media (max-width: 576px) {
-      #chartContainer {
-        height: 200px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Screener Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #0d1117, #1a1e28);
+            color: #d1d5db;
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .toast {
+            animation: toastFade 3s ease-out forwards;
+        }
+        #stocksTable tr:nth-child(even) {
+            background-color: #161b22;
+        }
+        #stocksTable tr:hover {
+            background-color: #21262d;
+            transition: background-color 0.2s;
+        }
+        .shadow-card {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        input, select {
+            background-color: #1f2937;
+            color: #d1d5db;
+            border: 1px solid #374151;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        #autocomplete, #alertAutocomplete {
+            position: absolute;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+        #autocomplete div:hover, #alertAutocomplete div:hover {
+            background-color: #2d3748;
+        }
+        #stockChart, #rsiChart {
+            background: linear-gradient(to bottom, #1f2937, #374151);
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+        #stockChart {
+            max-height: 300px !important;
+        }
+        #rsiChart {
+            max-height: 150px !important;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #stockChart {
+                max-height: 200px !important;
+            }
+            #rsiChart {
+                max-height: 120px !important;
+            }
+        }
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: flex-start;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox-input {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            transition: all 0.2s;
+        }
+        .checkbox-input:checked {
+            border-color: transparent;
+        }
+        .checkbox-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #priceCheck:checked { background-color: #60a5fa; }
+        #volumeCheck:checked { background-color: #6b7280; }
+        #maCheck:checked { background-color: #facc15; }
+        #bollingerUpperCheck:checked { background-color: #34d399; }
+        #bollingerLowerCheck:checked { background-color: #f87171; }
+        #rsiCheck:checked { background-color: #a78bfa; }
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #1e3a8a, #172554, #0f172a);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 20;
+            padding: 1rem 2rem;
+            transition: all 0.3s;
+        }
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #dbeafe;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .navbar-toggle {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar-toggle {
+                display: block;
+                font-size: 1.5rem;
+                color: #dbeafe;
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+            .navbar-content {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                padding-top: 1rem;
+            }
+            .navbar-content.active {
+                display: flex;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Fixed Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="#">Stock Screener Pro</a>
+<nav class="navbar">
+    <div class="flex justify-between items-center max-w-6xl mx-auto">
+        <div class="navbar-brand">Stock Screener Pro</div>
+        <button class="navbar-toggle" aria-label="Toggle menu">☰</button>
+        <div class="navbar-content flex items-center">
+        </div>
     </div>
-  </nav>
-
-  <div class="container mt-4">
-    <div class="row">
-      <!-- Left Panel: Alert Form and Active Alerts -->
-      <div class="col-12 col-lg-4 mb-4">
-        <div class="card mb-3 shadow">
-          <div class="card-header">Set Price Alert</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="symbol" class="form-label">Stock Symbol</label>
-              <input type="text" id="symbol" class="form-control" placeholder="e.g., AAPL" list="stockSymbols">
-              <datalist id="stockSymbols">
-                <option value="AAPL">
-                <option value="GOOGL">
-                <option value="MSFT">
-                <option value="AMZN">
-                <option value="TSLA">
-                <option value="META">
-                <option value="NVDA">
-                <option value="AMD">
-                <option value="INTC">
-                <option value="NFLX">
-              </datalist>
+</nav>
+<div class="container mx-auto p-6 max-w-6xl mt-24">
+    <header class="mb-6">
+        <div class="relative">
+            <input type="text" id="search" placeholder="Search stocks..." class="p-3 rounded-lg w-full shadow-card">
+            <div id="autocomplete" class="hidden w-full rounded-b-lg"></div>
+        </div>
+    </header>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="stock-list bg-gray-900 p-5 rounded-xl shadow-card">
+            <h2 class="text-2xl font-semibold text-gray-200 mb-3">Stocks</h2>
+            <div class="overflow-x-auto">
+                <table id="stocksTable" class="w-full border-collapse text-left">
+                    <thead>
+                    <tr class="bg-gray-800">
+                        <th class="p-3 font-medium">Symbol</th>
+                        <th class="p-3 font-medium">Price</th>
+                        <th class="p-3 font-medium">Change</th>
+                        <th class="p-3 font-medium">Volume</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
-            <div class="mb-3">
-              <label for="condition" class="form-label">Condition</label>
-              <select id="condition" class="form-select">
+        </section>
+        <section class="charts bg-gray-900 p-5 rounded-xl shadow-card">
+            <h2 class="text-2xl font-semibold text-gray-200 mb-3">Chart</h2>
+            <div class="bg-gray-800 p-3 rounded-lg mb-4">
+                <div class="checkbox-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="priceCheck" class="checkbox-input" checked disabled>
+                        <span class="font-bold text-blue-400">Price</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="volumeCheck" class="checkbox-input">
+                        <span class="font-bold text-gray-400">Volume</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="maCheck" class="checkbox-input">
+                        <span class="font-bold text-yellow-400">5-Point MA</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="bollingerUpperCheck" class="checkbox-input">
+                        <span class="font-bold text-green-400">Bollinger Upper</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="bollingerLowerCheck" class="checkbox-input">
+                        <span class="font-bold text-red-400">Bollinger Lower</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rsiCheck" class="checkbox-input">
+                        <span class="font-bold text-purple-400">RSI</span>
+                    </label>
+                </div>
+            </div>
+            <div class="chart-container space-y-4">
+                <canvas id="stockChart" class="w-full"></canvas>
+                <canvas id="rsiChart" class="w-full"></canvas>
+            </div>
+        </section>
+    </div>
+    <section class="alerts mt-6 bg-gray-900 p-5 rounded-xl shadow-card relative">
+        <h2 class="text-2xl font-semibold text-gray-200 mb-3">Alerts</h2>
+        <div class="flex flex-wrap gap-4 mb-4 relative">
+            <input type="text" id="alertSymbol" placeholder="Symbol" class="p-3 rounded-lg flex-1 min-w-[100px]">
+            <div id="alertAutocomplete" class="hidden w-full max-w-[200px] rounded-b-lg"></div>
+            <select id="alertCondition" class="p-3 rounded-lg bg-gray-700 text-gray-200 border-gray-600 min-w-[100px]">
                 <option value="above">Above</option>
                 <option value="below">Below</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="price" class="form-label">Target Price</label>
-              <input type="number" id="price" class="form-control" placeholder="Enter price" step="0.01">
-            </div>
-            <button id="setAlert" class="btn btn-primary w-100">Set Alert</button>
-          </div>
+            </select>
+            <input type="number" id="alertPrice" placeholder="Price" class="p-3 rounded-lg w-24 min-w-[100px]">
+            <button id="setAlert" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium transition duration-200 min-w-[80px]">Add/Edit</button>
         </div>
-        <div class="card shadow">
-          <div class="card-header">Active Alerts</div>
-          <ul class="list-group list-group-flush" id="alertList">
-            <!-- Active alerts injected here -->
-          </ul>
+        <div id="setAlerts" class="space-y-2 mb-4">
         </div>
-      </div>
-
-      <!-- Right Panel: Stock Table and Trend Chart -->
-      <div class="col-12 col-lg-8">
-        <div class="card shadow mb-4">
-          <div class="card-header">Real-Time Stock Updates</div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table id="stockTable" class="table table-dark table-striped w-100">
-                <thead>
-                  <tr>
-                    <th>Symbol</th>
-                    <th>Price</th>
-                    <th>Change</th>
-                    <th>% Change</th>
-                    <th>Volume</th>
-                    <th>Updated At</th>
-                  </tr>
-                </thead>
-                <tbody id="stockBody"><!-- Data injected dynamically --></tbody>
-              </table>
-            </div>
-          </div>
+        <div id="alertsContainer" class="fixed bottom-6 right-6 space-y-2 w-80">
         </div>
-        <!-- Fixed Trend Chart below table with selectors -->
-        <div class="card shadow" id="chartContainer">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <span>Real-Time Price Trend: <span id="chartSymbol">None</span></span>
-            <div>
-              <select id="timeFrame" class="form-select form-select-sm d-inline-block w-auto me-2">
-                <option value="all">All</option>
-                <option value="1">Last 1 Minute</option>
-                <option value="5">Last 5 Minutes</option>
-                <option value="15">Last 15 Minutes</option>
-              </select>
-              <!-- On mobile, we'll force the line chart for smoother updates -->
-              <select id="chartType" class="form-select form-select-sm d-inline-block w-auto">
-                <option value="line">Line</option>
-                <option value="candlestick">Candlestick</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-body p-0" style="position: relative; height: 100%;">
-            <canvas id="trendChart" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </section>
+</div>
 
-  <!-- Toast Container for Loud Alerts -->
-  <div class="toast-container" id="toastContainer"></div>
+<script>
+    const ws = new WebSocket('wss://go-ws-stock-simulator.onrender.com/ws');
 
-  <!-- Scripts: jQuery, DataTables, Bootstrap Bundle, Chart.js, Financial Plugin -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
-
-  <script>
-    // Global variables for stocks, alerts, and chart.
-    let latestStocks = {}; // Stock data keyed by symbol.
-    let stockHistory = {}; // Price history: { symbol: [{time, price}, ...] }
-    let selectedSymbol = null;
-    let trendChart = null;
-    let dataTable = null;
-    const currentAlerts = [];
-    
-    // Connect to the deployed WebSocket.
-    const ws = new WebSocket("wss://go-ws-stock-simulator.onrender.com/ws");
-    ws.onopen = () => console.log("WebSocket connected.");
+    ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (Array.isArray(data)) {
-        data.forEach(stock => processStockUpdate(stock));
-      } else if (data.type === "ALERT") {
-        showToast(data.message);
-      } else {
-        processStockUpdate(data);
-      }
+        const data = JSON.parse(event.data);
+        console.log('Received data:', data);
+        if (Array.isArray(data)) {
+            updateStockList(data);
+        } else if (data.type === 'ALERT') {
+            addAlert(data.message);
+        } else {
+            updateStock(data);
+        }
     };
-    ws.onerror = (error) => console.error("WebSocket error:", error);
-    ws.onclose = () => console.log("WebSocket closed.");
+    ws.onclose = () => console.log('WebSocket closed');
 
-    function processStockUpdate(stock) {
-      latestStocks[stock.symbol] = stock;
-      if (!stockHistory[stock.symbol]) {
-        stockHistory[stock.symbol] = [];
-      }
-      stockHistory[stock.symbol].push({ time: new Date(stock.updatedAt), price: stock.price });
-      if (stockHistory[stock.symbol].length > 100) {
-        stockHistory[stock.symbol].shift();
-      }
-    }
+    const stockMap = new Map();
+    const stockHistory = new Map();
+    const setAlerts = new Map();
+    const MAX_POINTS = 20;
 
-    // Refresh the DataTable every second without disturbing scroll.
-    function refreshTable() {
-      const tableData = [];
-      for (const symbol in latestStocks) {
-        const stock = latestStocks[symbol];
-        tableData.push([
-          stock.symbol,
-          stock.price.toFixed(2),
-          stock.change.toFixed(2),
-          stock.changePercent.toFixed(2) + '%',
-          stock.volume,
-          new Date(stock.updatedAt).toLocaleTimeString()
-        ]);
-      }
-      if (!dataTable) {
-        dataTable = $('#stockTable').DataTable({
-          data: tableData,
-          columns: [
-            { title: "Symbol" },
-            { title: "Price" },
-            { title: "Change" },
-            { title: "% Change" },
-            { title: "Volume" },
-            { title: "Updated At" }
-          ],
-          rowCallback: function(row, data) {
-            const change = parseFloat(data[2]);
-            let intensity = Math.min(1, Math.abs(change) / 5);
-            let alpha = 0.3 + intensity * 0.7;
-            if (change > 0) {
-              $(row).css("background-color", `rgba(76, 175, 80, ${alpha})`);
-              $(row).find("td:eq(0)").css("color", "lightgreen");
-            } else if (change < 0) {
-              $(row).css("background-color", `rgba(244, 67, 54, ${alpha})`);
-              $(row).find("td:eq(0)").css("color", "tomato");
-            } else {
-              $(row).css("background-color", "");
-              $(row).find("td:eq(0)").css("color", "#e0e0e0");
-            }
-          },
-          paging: false,
-          info: false,
-          searching: false,
-          ordering: true,
-          order: [[0, "asc"]]
-        });
-        $('#stockTable tbody').on('click', 'tr', function () {
-          const rowData = dataTable.row(this).data();
-          if (rowData) {
-            selectStock(rowData[0]);
-          }
-        });
-      } else {
-        dataTable.clear();
-        dataTable.rows.add(tableData);
-        dataTable.draw(false);
-      }
-    }
-    setInterval(refreshTable, 1000);
+    let searchFilter = '';
 
-    function selectStock(symbol) {
-      selectedSymbol = symbol;
-      document.getElementById("chartSymbol").textContent = symbol;
-      updateChart();
-    }
+    let selectedStock = null;
+    let stockChart = null;
+    let rsiChart = null;
 
-    // Update chart: force line chart on mobile for stability.
-    function updateChart() {
-      if (!selectedSymbol || !stockHistory[selectedSymbol]) return;
-      const tf = document.getElementById("timeFrame").value;
-      let filteredHistory = stockHistory[selectedSymbol];
-      if (tf !== "all") {
-        const minutes = parseInt(tf);
-        const cutoff = Date.now() - minutes * 60 * 1000;
-        filteredHistory = filteredHistory.filter(entry => entry.time.getTime() >= cutoff);
-      }
-      // Force line chart on mobile for smoother updates.
-      const chartType = window.innerWidth < 576 ? "line" : document.getElementById("chartType").value;
-      const ctx = document.getElementById("trendChart").getContext("2d");
-
-      // If the chart exists and the type is unchanged, update data in place.
-      if (trendChart && trendChart.config.type === chartType) {
-        if (chartType === "line") {
-          const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
-          const data = filteredHistory.map(entry => entry.price);
-          trendChart.data.labels = labels;
-          trendChart.data.datasets[0].data = data;
-          let lineColor = (data.length > 1 && (data[data.length - 1] - data[0]) >= 0) ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-          const bgColor = lineColor.replace(/1\)$/, '0.2)');
-          trendChart.data.datasets[0].borderColor = lineColor;
-          trendChart.data.datasets[0].backgroundColor = bgColor;
-          trendChart.update();
-        } else if (chartType === "candlestick") {
-          if (filteredHistory.length < 3) return;
-          const groupSize = 3;
-          let candleData = [];
-          for (let i = 0; i < filteredHistory.length; i += groupSize) {
-            const group = filteredHistory.slice(i, i + groupSize);
-            if (group.length < 2) continue;
-            const open = group[0].price;
-            const close = group[group.length - 1].price;
-            const high = Math.max(...group.map(p => p.price));
-            const low = Math.min(...group.map(p => p.price));
-            candleData.push({ x: group[0].time, o: open, h: high, l: low, c: close });
-          }
-          trendChart.data.datasets[0].data = candleData;
-          trendChart.update();
-        }
-        return;
-      }
-      
-      // Otherwise, create a new chart.
-      if (trendChart) {
-        trendChart.destroy();
-        trendChart = null;
-      }
-      
-      if (chartType === "line") {
-        const labels = filteredHistory.map(entry => entry.time.toLocaleTimeString());
-        const data = filteredHistory.map(entry => entry.price);
-        let lineColor = (data.length > 1 && (data[data.length - 1] - data[0]) >= 0) ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
-        const bgColor = lineColor.replace(/1\)$/, '0.2)');
-        trendChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: selectedSymbol,
-              data: data,
-              borderColor: lineColor,
-              backgroundColor: bgColor,
-              fill: true,
-              tension: 0.3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { title: { display: true, text: 'Time' } },
-              y: { title: { display: true, text: 'Price' } }
-            }
-          }
-        });
-      } else if (chartType === "candlestick") {
-        if (filteredHistory.length < 3) return;
-        const groupSize = 3;
-        let candleData = [];
-        for (let i = 0; i < filteredHistory.length; i += groupSize) {
-          const group = filteredHistory.slice(i, i + groupSize);
-          if (group.length < 2) continue;
-          const open = group[0].price;
-          const close = group[group.length - 1].price;
-          const high = Math.max(...group.map(p => p.price));
-          const low = Math.min(...group.map(p => p.price));
-          candleData.push({ x: group[0].time, o: open, h: high, l: low, c: close });
-        }
-        trendChart = new Chart(ctx, {
-          type: 'candlestick',
-          data: { datasets: [{ label: selectedSymbol, data: candleData }] },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { title: { display: true, text: 'Time' } },
-              y: { title: { display: true, text: 'Price' } }
-            }
-          }
-        });
-      }
-    }
-    // Update chart every 5 seconds.
-    setInterval(updateChart, 5000);
-
-    // Set alert: send alert to backend and update active alerts list.
-    document.getElementById("setAlert").addEventListener("click", () => {
-      const symbol = document.getElementById("symbol").value.trim().toUpperCase();
-      const condition = document.getElementById("condition").value;
-      const price = parseFloat(document.getElementById("price").value);
-      if (!symbol || isNaN(price)) {
-        showToast("Please enter a valid symbol and price.");
-        return;
-      }
-      const alertData = { Type: "SET_ALERT", Payload: { symbol, condition, price } };
-      ws.send(JSON.stringify(alertData));
-      const alertObj = { symbol, condition, price };
-      currentAlerts.push(alertObj);
-      addAlertToList(alertObj);
-      document.getElementById("symbol").value = "";
-      document.getElementById("price").value = "";
+    const navbarToggle = document.querySelector('.navbar-toggle');
+    const navbarContent = document.querySelector('.navbar-content');
+    navbarToggle.addEventListener('click', () => {
+        navbarContent.classList.toggle('active');
     });
 
-    function addAlertToList(alertObj) {
-      const li = document.createElement("li");
-      li.className = "list-group-item d-flex justify-content-between align-items-center";
-      li.textContent = `${alertObj.symbol} when price is ${alertObj.condition} ${alertObj.price.toFixed(2)}`;
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "btn btn-danger btn-sm";
-      removeBtn.textContent = "Remove";
-      removeBtn.onclick = () => { removeAlert(alertObj, li); };
-      li.appendChild(removeBtn);
-      document.getElementById("alertList").appendChild(li);
+    const stockCtx = document.getElementById('stockChart').getContext('2d');
+    stockChart = new Chart(stockCtx, {
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'Price',
+                    data: [],
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96, 165, 250, 0.15)',
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y',
+                    hidden: false,
+                },
+                {
+                    type: 'bar',
+                    label: 'Volume',
+                    data: [],
+                    backgroundColor: 'rgba(107, 114, 128, 0.5)',
+                    yAxisID: 'y1',
+                    hidden: true,
+                },
+                {
+                    type: 'line',
+                    label: '5-Point MA',
+                    data: [],
+                    borderColor: '#facc15',
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y',
+                    hidden: true,
+                },
+                {
+                    type: 'line',
+                    label: 'Bollinger Upper',
+                    data: [],
+                    borderColor: '#34d399',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y',
+                    hidden: true,
+                },
+                {
+                    type: 'line',
+                    label: 'Bollinger Lower',
+                    data: [],
+                    borderColor: '#f87171',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y',
+                    hidden: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    display: true,
+                    ticks: { color: '#d1d5db', font: { family: 'Inter', size: 14 } },
+                    grid: { color: '#4b5563', lineWidth: 0.5 }
+                },
+                y: {
+                    display: true,
+                    position: 'left',
+                    ticks: { color: '#d1d5db', font: { family: 'Inter', size: 14 } },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    grid: { color: '#4b5563', lineWidth: 0.5 }
+                },
+                y1: {
+                    display: true,
+                    position: 'right',
+                    ticks: { color: '#d1d5db', font: { family: 'Inter', size: 14 } },
+                    grid: { drawOnChartArea: false },
+                    suggestedMin: 0,
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#1f2937',
+                    titleFont: { family: 'Inter', size: 16, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 14 },
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#4b5563',
+                    borderWidth: 1,
+                    cornerRadius: 6,
+                    padding: 8
+                }
+            }
+        }
+    });
+
+    const rsiCtx = document.getElementById('rsiChart').getContext('2d');
+    rsiChart = new Chart(rsiCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'RSI (14)',
+                data: [],
+                borderColor: '#a78bfa',
+                fill: false,
+                tension: 0.4,
+                hidden: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    display: true,
+                    ticks: { color: '#d1d5db', font: { family: 'Inter', size: 14 } },
+                    grid: { color: '#4b5563', lineWidth: 0.5 }
+                },
+                y: {
+                    display: true,
+                    ticks: { color: '#d1d5db', font: { family: 'Inter', size: 14 } },
+                    min: 0,
+                    max: 100,
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    grid: { color: '#4b5563', lineWidth: 0.5 }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#1f2937',
+                    titleFont: { family: 'Inter', size: 16, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 14 },
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#4b5563',
+                    borderWidth: 1,
+                    cornerRadius: 6,
+                    padding: 8
+                }
+            }
+        }
+    });
+
+    const checkboxes = {
+        price: document.getElementById('priceCheck'),
+        volume: document.getElementById('volumeCheck'),
+        ma: document.getElementById('maCheck'),
+        bollingerUpper: document.getElementById('bollingerUpperCheck'),
+        bollingerLower: document.getElementById('bollingerLowerCheck'),
+        rsi: document.getElementById('rsiCheck'),
+    };
+
+    checkboxes.rsi.checked = false;
+
+    Object.keys(checkboxes).forEach(key => {
+        checkboxes[key].addEventListener('change', () => {
+            if (key === 'price') return;
+            const datasetIndex = {
+                volume: 1,
+                ma: 2,
+                bollingerUpper: 3,
+                bollingerLower: 4,
+            }[key] || (key === 'rsi' ? 0 : null);
+            if (datasetIndex !== null) {
+                const chartToUpdate = key === 'rsi' ? rsiChart : stockChart;
+                chartToUpdate.data.datasets[datasetIndex].hidden = !checkboxes[key].checked;
+                chartToUpdate.update();
+                if (key === 'rsi') {
+                    document.getElementById('rsiChart').style.display = checkboxes.rsi.checked ? 'block' : 'none';
+                }
+            }
+        });
+    });
+
+    function updateStockList(stocks) {
+        stockMap.clear();
+        stocks.forEach(stock => {
+            stockMap.set(stock.symbol, stock);
+            if (!stockHistory.has(stock.symbol)) {
+                stockHistory.set(stock.symbol, []);
+            }
+        });
+        renderStockTable();
+        updateAutocomplete();
+        updateAlertAutocomplete();
     }
 
-    function removeAlert(alertObj, listItem) {
-      const removeMsg = { Type: "REMOVE_ALERT", Payload: alertObj };
-      ws.send(JSON.stringify(removeMsg));
-      listItem.remove();
-      const index = currentAlerts.findIndex(a =>
-        a.symbol === alertObj.symbol && a.condition === alertObj.condition && a.price === alertObj.price);
-      if (index !== -1) {
-        currentAlerts.splice(index, 1);
-      }
+    function updateStock(stockUpdate) {
+        const symbol = stockUpdate.symbol;
+        if (stockMap.has(symbol)) {
+            const stock = stockMap.get(symbol);
+            Object.assign(stock, stockUpdate);
+            const history = stockHistory.get(symbol);
+            history.push({ timestamp: new Date(stock.updatedAt), price: stock.price, volume: stock.volume });
+            if (history.length > MAX_POINTS) {
+                history.shift();
+            }
+            renderStockTable();
+            if (selectedStock === symbol) {
+                updateCharts(symbol);
+            }
+        }
     }
 
-    // Display a loud, prominent toast notification.
-    function showToast(message) {
-      const toastEl = document.createElement("div");
-      toastEl.className = "toast align-items-center text-bg-danger border-0";
-      toastEl.setAttribute("role", "alert");
-      toastEl.setAttribute("aria-live", "assertive");
-      toastEl.setAttribute("aria-atomic", "true");
-      toastEl.innerHTML = `
-        <div class="d-flex">
-          <div class="toast-body fs-5 fw-bold">${message}</div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    function renderStockTable() {
+        const tableBody = document.querySelector('#stocksTable tbody');
+        tableBody.innerHTML = '';
+        const filteredStocks = Array.from(stockMap.values()).filter(stock =>
+            stock.symbol.toLowerCase().includes(searchFilter)
+        );
+        filteredStocks.forEach(stock => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+          <td class="p-3"><a href="#" class="text-blue-400 hover:text-blue-300" data-symbol="${stock.symbol}">${stock.symbol}</a></td>
+          <td class="p-3">${stock.price.toFixed(2)}</td>
+          <td class="p-3 ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}">${stock.change.toFixed(2)} (${stock.changePercent.toFixed(2)}%)</td>
+          <td class="p-3">${stock.volume.toLocaleString()}</td>
+        `;
+            tableBody.appendChild(row);
+        });
+        document.querySelectorAll('#stocksTable a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const symbol = e.target.getAttribute('data-symbol');
+                selectStock(symbol);
+            });
+        });
+    }
+
+    function updateAutocomplete() {
+        const searchInput = document.getElementById('search');
+        const autocomplete = document.getElementById('autocomplete');
+        const value = searchInput.value.toLowerCase();
+        if (!value) {
+            searchFilter = '';
+            renderStockTable();
+            autocomplete.classList.add('hidden');
+            return;
+        }
+        const suggestions = Array.from(stockMap.keys())
+            .filter(symbol => symbol.toLowerCase().includes(value))
+            .slice(0, 5);
+        autocomplete.innerHTML = '';
+        suggestions.forEach(symbol => {
+            const div = document.createElement('div');
+            div.className = 'p-2 cursor-pointer text-gray-200';
+            div.textContent = symbol;
+            div.addEventListener('click', () => {
+                searchInput.value = symbol;
+                searchFilter = symbol.toLowerCase();
+                renderStockTable();
+                autocomplete.classList.add('hidden');
+            });
+            autocomplete.appendChild(div);
+        });
+        autocomplete.classList.toggle('hidden', suggestions.length === 0);
+    }
+
+    function updateAlertAutocomplete() {
+        const alertInput = document.getElementById('alertSymbol');
+        const alertAutocomplete = document.getElementById('alertAutocomplete');
+        const value = alertInput.value.toLowerCase();
+        if (!value) {
+            alertAutocomplete.classList.add('hidden');
+            return;
+        }
+        const suggestions = Array.from(stockMap.keys())
+            .filter(symbol => symbol.toLowerCase().includes(value))
+            .slice(0, 5);
+        alertAutocomplete.innerHTML = '';
+        suggestions.forEach(symbol => {
+            const div = document.createElement('div');
+            div.className = 'p-2 cursor-pointer text-gray-200';
+            div.textContent = symbol;
+            div.addEventListener('click', () => {
+                alertInput.value = symbol;
+                alertAutocomplete.classList.add('hidden');
+            });
+            alertAutocomplete.appendChild(div);
+        });
+        alertAutocomplete.classList.toggle('hidden', suggestions.length === 0);
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => {
+        searchFilter = e.target.value.toLowerCase();
+        renderStockTable();
+        updateAutocomplete();
+    });
+
+    document.getElementById('alertSymbol').addEventListener('input', (e) => {
+        updateAlertAutocomplete();
+    });
+
+    function addAlert(message) {
+        const alertsContainer = document.getElementById('alertsContainer');
+        const toast = document.createElement('div');
+        toast.className = 'bg-green-900 bg-opacity-90 p-3 rounded-lg shadow-card toast flex justify-between items-center';
+        toast.innerHTML = `
+        <span>${message}</span>
+        <div>
+          <span class="text-green-300 mr-2">✓</span>
+          <button class="text-gray-300 hover:text-gray-100">×</button>
         </div>
       `;
-      document.getElementById("toastContainer").appendChild(toastEl);
-      const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
-      bsToast.show();
-      toastEl.addEventListener('hidden.bs.toast', () => { toastEl.remove(); });
+        alertsContainer.appendChild(toast);
+        const dismissButton = toast.querySelector('button');
+        dismissButton.addEventListener('click', () => {
+            if (toast.parentNode) {
+                alertsContainer.removeChild(toast);
+            }
+        });
+        setTimeout(() => {
+            if (toast.parentNode) {
+                alertsContainer.removeChild(toast);
+            }
+        }, 3000);
     }
-  </script>
+
+    function renderSetAlerts() {
+        const setAlertsContainer = document.getElementById('setAlerts');
+        setAlertsContainer.innerHTML = '';
+        setAlerts.forEach((alert, key) => {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-800 p-2 rounded-lg flex justify-between items-center';
+            div.innerHTML = `
+          <span class="cursor-pointer" data-key="${key}">${alert.symbol} ${alert.condition} ${alert.price.toFixed(2)}</span>
+          <button class="text-red-400 hover:text-red-300" data-key="${key}">×</button>
+        `;
+            setAlertsContainer.appendChild(div);
+            div.querySelector('span').addEventListener('click', () => {
+                document.getElementById('alertSymbol').value = alert.symbol;
+                document.getElementById('alertCondition').value = alert.condition;
+                document.getElementById('alertPrice').value = alert.price;
+                setAlerts.delete(key);
+                ws.send(JSON.stringify({ type: 'REMOVE_ALERT', payload: alert }));
+                renderSetAlerts();
+            });
+            div.querySelector('button').addEventListener('click', () => {
+                ws.send(JSON.stringify({ type: 'REMOVE_ALERT', payload: alert }));
+                setAlerts.delete(key);
+                renderSetAlerts();
+            });
+        });
+    }
+
+    document.getElementById('setAlert').addEventListener('click', (e) => {
+        e.preventDefault();
+        const symbol = document.getElementById('alertSymbol').value.trim().toUpperCase();
+        const condition = document.getElementById('alertCondition').value;
+        const price = parseFloat(document.getElementById('alertPrice').value);
+        if (symbol && condition && !isNaN(price)) {
+            const alert = { symbol, condition, price };
+            const key = `${symbol}_${condition}_${price}`;
+            if (!setAlerts.has(key)) {
+                setAlerts.set(key, alert);
+                ws.send(JSON.stringify({ type: 'SET_ALERT', payload: alert }));
+                console.log('Sent SET_ALERT:', alert);
+            }
+            renderSetAlerts();
+            document.getElementById('alertSymbol').value = '';
+            document.getElementById('alertPrice').value = '';
+        }
+    });
+
+    function selectStock(symbol) {
+        selectedStock = symbol;
+        updateCharts(symbol);
+    }
+
+    function calculateMovingAverage(data, period) {
+        const ma = [];
+        for (let i = 0; i < data.length; i++) {
+            if (i < period - 1) {
+                ma.push(null);
+            } else {
+                const slice = data.slice(i - period + 1, i + 1);
+                const avg = slice.reduce((sum, point) => sum + point.price, 0) / period;
+                ma.push(avg);
+            }
+        }
+        return ma;
+    }
+
+    function calculateBollingerBands(data, period = 20, multiplier = 2) {
+        const ma = calculateMovingAverage(data, period);
+        const upper = [];
+        const lower = [];
+        for (let i = 0; i < data.length; i++) {
+            if (i < period - 1) {
+                upper.push(null);
+                lower.push(null);
+            } else {
+                const slice = data.slice(i - period + 1, i + 1);
+                const mean = ma[i];
+                const variance = slice.reduce((sum, point) => sum + Math.pow(point.price - mean, 2), 0) / period;
+                const stdDev = Math.sqrt(variance);
+                upper.push(mean + multiplier * stdDev);
+                lower.push(mean - multiplier * stdDev);
+            }
+        }
+        return { upper, lower };
+    }
+
+    function calculateRSI(data, period = 14) {
+        const rsi = [];
+        for (let i = 0; i < data.length; i++) {
+            if (i < period) {
+                rsi.push(null);
+            } else {
+                const slice = data.slice(i - period, i + 1);
+                let gains = 0, losses = 0;
+                for (let j = 1; j < slice.length; j++) {
+                    const diff = slice[j].price - slice[j - 1].price;
+                    if (diff > 0) gains += diff;
+                    else losses -= diff;
+                }
+                const avgGain = gains / period;
+                const avgLoss = losses / period;
+                const rs = avgGain / (avgLoss || 1);
+                rsi.push(100 - (100 / (1 + rs)));
+            }
+        }
+        return rsi;
+    }
+
+    function updateCharts(symbol) {
+        const history = stockHistory.get(symbol);
+        if (!history || history.length === 0) {
+            stockChart.data.labels = [];
+            stockChart.data.datasets.forEach(dataset => dataset.data = []);
+            rsiChart.data.labels = [];
+            rsiChart.data.datasets[0].data = [];
+            stockChart.data.datasets[0].label = `${symbol} Price (No Data)`;
+            stockChart.update();
+            rsiChart.update();
+            return;
+        }
+
+        const labels = history.map(point => point.timestamp.toLocaleTimeString());
+        const prices = history.map(point => point.price);
+        const volumes = history.map(point => point.volume);
+        const ma5 = calculateMovingAverage(history, 5);
+        const { upper, lower } = calculateBollingerBands(history, 20, 2);
+        const rsi = calculateRSI(history, 14);
+
+        const minPrice = Math.min(...prices) * 0.95;
+        const maxPrice = Math.max(...prices) * 1.05;
+        const maxVolume = Math.max(...volumes) * 1.1;
+
+        stockChart.data.labels = labels;
+        stockChart.data.datasets[0].data = prices;
+        stockChart.data.datasets[1].data = volumes;
+        stockChart.data.datasets[2].data = ma5;
+        stockChart.data.datasets[3].data = upper;
+        stockChart.data.datasets[4].data = lower;
+        stockChart.options.scales.y.suggestedMin = minPrice;
+        stockChart.options.scales.y.suggestedMax = maxPrice;
+        stockChart.options.scales.y1.suggestedMax = maxVolume;
+        stockChart.data.datasets[0].label = `${symbol} Price`;
+        stockChart.update();
+
+        rsiChart.data.labels = labels;
+        rsiChart.data.datasets[0].data = rsi;
+        rsiChart.update();
+    }
+</script>
 </body>
 </html>
