@@ -255,7 +255,7 @@
 </div>
 
 <script>
-    const ws = new WebSocket('wss://go-ws-stock-simulator.onrender.com/ws');
+    const ws = new WebSocket('YOUR WS ADDRESS'); // add your localhost and port here
 
     ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (event) => {
